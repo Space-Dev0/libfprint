@@ -271,6 +271,8 @@ void goodix_send_nop (FpDevice          *dev,
  * @param user_data
  */
 void goodix_send_mcu_get_image (FpDevice           *dev,
+                                const guint8       *payload,
+                                guint16             payload_len,
                                 GoodixImageCallback callback,
                                 gpointer            user_data);
 
@@ -564,6 +566,8 @@ gboolean goodix_shutdown_tls (FpDevice *dev,
  * @param user_data
  */
 void goodix_tls_read_image (FpDevice           *dev,
+                            const guint8       *payload,
+                            guint16             payload_len,
                             GoodixImageCallback callback,
                             gpointer            user_data);
 

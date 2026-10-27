@@ -1232,6 +1232,9 @@ on_goodix_tls_read_handshake (FpDevice *dev, guint8 *data,
   //   user_data;
   FpiSsm *ssm = user_data;
 
+  fp_dbg ("on_goodix_tls_read_handshake: stage=%d, length=%u, byte0=0x%02x",
+          fpi_ssm_get_cur_state (ssm), length, (length > 0 && data) ? data[0] : 0);
+
   if (error)
     {
       fpi_ssm_mark_failed (ssm, error);
@@ -1304,6 +1307,8 @@ goodix_send_tls_records (FpDevice *dev, guint8 *buff, int size, GError **err)
       guint16 rec_len = 5 + ((buff[offset + 3] << 8) | buff[offset + 4]);
       if (offset + rec_len > size)
         break;
+      fp_dbg ("goodix_send_tls_records: sending record type=0x%02x, len=%u (offset=%d/%d)",
+              buff[offset], rec_len, offset, size);
       if (!goodix_send_pack (dev, GOODIX_FLAGS_TLS, buff + offset, rec_len, NULL, err))
         return FALSE;
       offset += rec_len;
@@ -1311,6 +1316,7 @@ goodix_send_tls_records (FpDevice *dev, guint8 *buff, int size, GError **err)
     }
   if (offset < size)
     {
+      fp_dbg ("goodix_send_tls_records: sending trailing %d bytes", size - offset);
       if (!goodix_send_pack (dev, GOODIX_FLAGS_TLS, buff + offset, size - offset, NULL, err))
         return FALSE;
     }
@@ -1386,6 +1392,7 @@ on_goodix_request_tls_connection (FpDevice *dev, guint8 *data,
                                   guint16 length, gpointer user_data,
                                   GError *error)
 {
+  fp_dbg ("on_goodix_request_tls_connection: length=%u, byte0=0x%02x", length, (length > 0 && data) ? data[0] : 0);
   if (error)
     {
       fp_err ("failed to get tls handshake: %s", error->message);

@@ -1268,20 +1268,30 @@ static void
 on_tls_successfully_established (FpDevice *dev, gpointer user_data,
                                  GError *error)
 {
-  fp_dbg ("HANDSHAKE DONE");
   FpiDeviceGoodixTls * self = FPI_DEVICE_GOODIXTLS (dev);
   FpiDeviceGoodixTlsPrivate * priv =
     fpi_device_goodixtls_get_instance_private (self);
-  ((GoodixNoneCallback) priv->tls_ready_callback->callback)(
-    dev, priv->tls_ready_callback->user_data, NULL);
-  g_clear_pointer (&priv->tls_ready_callback, g_free);
+  GoodixCallbackInfo *cb_info = priv->tls_ready_callback;
+
+  if (!cb_info)
+    return;
+
+  priv->tls_ready_callback = NULL;
+  ((GoodixNoneCallback) cb_info->callback) (dev, cb_info->user_data, error);
+  g_free (cb_info);
 }
 static void
 tls_handshake_done (FpiSsm *ssm, FpDevice *dev, GError *error)
 {
   if (error)
-    fp_dbg ("failed to do tls handshake: %s (code: %d)", error->message,
-            error->code);
+    {
+      fp_dbg ("failed to do tls handshake: %s (code: %d)", error->message,
+              error->code);
+      on_tls_successfully_established (dev, NULL, error);
+      return;
+    }
+
+  fp_dbg ("HANDSHAKE DONE");
   on_tls_successfully_established (dev, NULL, NULL);
 }
 
